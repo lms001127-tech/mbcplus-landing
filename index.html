@@ -11,29 +11,59 @@
 <meta property="og:type" content="website">
 
 <!-- ===================================================================
-     [설치 자리 1] 추적 스크립트 — 주석을 풀고 ID만 넣으세요
+     [설치 자리 1] 광고 추적 — 아래 세 칸에 ID만 넣으면 켜집니다.
+
+     빈 문자열("")로 두면 그 채널은 아예 불러오지 않으므로, 지금처럼
+     비워둔 상태로도 페이지는 정상 동작합니다.
+
+       naver : 네이버 검색광고 > 도구 > 프리미엄 로그분석에서 발급받는 값
+               ※ 이 값을 넣어야 검색광고 보고서의 "전환수"가 집계됩니다.
+       meta  : 메타 비즈니스 관리자 > 이벤트 관리자의 픽셀 ID (숫자)
+       kakao : 카카오모먼트 > 픽셀 & SDK 의 트랙 ID
      =================================================================== -->
-<!-- 네이버 프리미엄 로그분석
-<script src="//wcs.naver.net/wcslog.js"></script>
 <script>
-if(!wcs_add) var wcs_add={}; wcs_add["wa"]="여기에_네이버_ID";
-if(window.wcs) wcs_do();
+window.TRACKING = {
+  naver: "",
+  meta:  "",
+  kakao: ""
+};
+
+(function () {
+  var T = window.TRACKING || {};
+
+  // 네이버 프리미엄 로그분석 (검색광고 전환추적)
+  if (T.naver) {
+    window.wcs_add = window.wcs_add || {};
+    window.wcs_add["wa"] = T.naver;
+    var nv = document.createElement("script");
+    nv.async = true;
+    nv.src = "//wcs.naver.net/wcslog.js";
+    nv.onload = function () { try { if (window.wcs) wcs_do(); } catch (e) {} };
+    document.head.appendChild(nv);
+  }
+
+  // 메타 픽셀
+  if (T.meta) {
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+    n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+    document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    try { fbq('init', T.meta); fbq('track', 'PageView'); } catch (e) {}
+  }
+
+  // 카카오 픽셀
+  if (T.kakao) {
+    var kk = document.createElement("script");
+    kk.async = true;
+    kk.src = "//t1.daumcdn.net/adfit/static/kp.js";
+    kk.onload = function () {
+      try { if (window.kakaoPixel) kakaoPixel(T.kakao).pageView(); } catch (e) {}
+    };
+    document.head.appendChild(kk);
+  }
+})();
 </script>
--->
-<!-- 메타 픽셀
-<script>
-!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
-n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
-document,'script','https://connect.facebook.net/en_US/fbevents.js');
-fbq('init','여기에_픽셀_ID'); fbq('track','PageView');
-</script>
--->
-<!-- 카카오 픽셀
-<script src="//t1.daumcdn.net/adfit/static/kp.js"></script>
-<script>kakaoPixel('여기에_카카오_ID').pageView();</script>
--->
 
 <style>
 :root{
@@ -414,10 +444,38 @@ footer{padding:34px 0 40px;font-size:14px;color:var(--muted);text-align:center;l
 }
 .sticky{position:fixed;left:0;right:0;bottom:0;background:rgba(11,22,38,.97);
   backdrop-filter:blur(8px);padding:11px 16px;display:flex;gap:9px;z-index:50}
-.sticky a{flex:1;text-align:center;padding:13px 8px;border-radius:10px;font-size:15px;
-  font-weight:800;text-decoration:none}
+.sticky a,.sticky button{flex:1;text-align:center;padding:13px 8px;border-radius:10px;
+  font-size:15px;font-weight:800;text-decoration:none;border:0;font-family:inherit;cursor:pointer}
 .sticky .a1{background:var(--accent);color:#fff}
 .sticky .a2{background:rgba(255,255,255,.13);color:#fff}
+
+/* 빠른 상담 신청 시트 — 페이지 어디서든 스크롤 없이 신청하도록 */
+.sheet{position:fixed;inset:0;z-index:60;display:none}
+.sheet.on{display:block}
+.sheet .dim{position:absolute;inset:0;background:rgba(6,12,22,.62)}
+.sheet .pnl{position:absolute;left:0;right:0;bottom:0;top:auto;margin:0;max-width:none;
+  border-radius:18px 18px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));
+  max-height:88vh;overflow:auto;box-shadow:0 -12px 40px rgba(0,0,0,.34)}
+.sheet .gr{width:38px;height:4px;border-radius:4px;background:#D8DFE9;margin:0 auto 14px}
+.sheet h3{font-size:20px;font-weight:900;color:var(--navy);margin:0 0 6px}
+.sheet .sd{font-size:14.5px;color:#4A5A73;margin:0 0 4px;line-height:1.55}
+.sheet .x2{position:absolute;top:8px;right:12px;font-size:26px;line-height:1;color:#8A97A8;
+  background:none;border:0;cursor:pointer;padding:4px 9px;font-family:inherit}
+@media (min-width:641px){
+  .sheet .pnl{left:50%;right:auto;bottom:auto;top:50%;transform:translate(-50%,-50%);
+    width:430px;border-radius:16px;max-height:86vh}
+}
+/* 히어로 보조 CTA — 이미 마음먹고 들어온 사람에게 즉시 신청 경로를 준다 */
+.hero .heroquick{display:block;margin:13px auto 0;background:none;border:0;color:#BFD3F2;
+  font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;padding:8px 4px;
+  text-decoration:underline;text-underline-offset:4px}
+/* 신청폼 선택 입력 접기 */
+.formcard details.opt{margin-top:16px;border-top:1px solid #E6EBF2;padding-top:6px}
+.formcard details.opt summary{cursor:pointer;font-size:14px;font-weight:700;color:#4A5A73;
+  padding:8px 0;list-style:none}
+.formcard details.opt summary::-webkit-details-marker{display:none}
+.formcard details.opt summary::after{content:" +";color:var(--accent);font-weight:900}
+.formcard details.opt[open] summary::after{content:" \2212";color:var(--accent)}
 
 @media (max-width:640px){
   body{font-size:16px}
@@ -501,6 +559,7 @@ footer{padding:34px 0 40px;font-size:14px;color:var(--muted);text-align:center;l
       <span>전국 온라인</span>
     </div>
     <a class="cta" href="#folio">수료생 작업물 보기 ↓</a>
+    <button type="button" class="heroquick" onclick="openSheet('hero')">작업물은 나중에 · 상담부터 신청하기 →</button>
   </div>
 </header>
 
@@ -685,11 +744,6 @@ footer{padding:34px 0 40px;font-size:14px;color:var(--muted);text-align:center;l
           <div class="co"><div class="lg"><img loading="lazy" src="https://studio.mbcplus-learning.com/img/index/teamlab.png" alt="팀랩" onerror="this.parentNode.style.display='none'"></div><b>팀랩(teamLab)</b><span>경계와 국경을 허무는 아트 컬렉티브</span></div>
         </div>
       </div>
-      <div class="step gold">
-        <div class="when">우수교육생 특전</div>
-        <div class="what">일본 기업 연수 (3박 4일)</div>
-        <p class="desc">국내 국비지원 과정에서 보기 드문 특전입니다. 실제로 일본 현지 기업을 방문합니다.</p>
-      </div>
       <div class="step">
         <div class="when">채용</div>
         <div class="what">협약 기업 170여 곳 연계 · 채용 가산점</div>
@@ -796,7 +850,7 @@ footer{padding:34px 0 40px;font-size:14px;color:var(--muted);text-align:center;l
 </section>
 
 <!-- ══ 후기 ══ -->
-<section class="rev">
+<section class="rev" id="rev">
   <div class="wrap">
     <div class="eyebrow">실제 수강 후기</div>
     <h2>먼저 다녀간 사람들의 말</h2>
@@ -940,6 +994,8 @@ footer{padding:34px 0 40px;font-size:14px;color:var(--muted);text-align:center;l
         <input id="nm" name="name" type="text" required autocomplete="name" placeholder="홍길동">
         <label for="ph">연락처</label>
         <input id="ph" name="phone" type="tel" required autocomplete="tel" inputmode="numeric" placeholder="010-0000-0000">
+        <details class="opt">
+        <summary>선택 입력 — 미리 알려주시면 상담이 빨라집니다</summary>
         <label for="cs">희망 과정</label>
         <select id="cs" name="course">
           <option value="아직 정하지 못했습니다">아직 정하지 못했습니다</option>
@@ -958,6 +1014,7 @@ footer{padding:34px 0 40px;font-size:14px;color:var(--muted);text-align:center;l
           <option>가능합니다</option>
           <option>어렵습니다</option>
         </select>
+        </details>
         <input type="hidden" id="src" name="source" value="">
         <label class="agree">
           <input type="checkbox" required>
@@ -999,8 +1056,38 @@ footer{padding:34px 0 40px;font-size:14px;color:var(--muted);text-align:center;l
 </footer>
 
 <div class="sticky">
-  <a class="a1" href="#apply">상담 신청</a>
+  <button type="button" class="a1" onclick="openSheet('sticky')">상담 신청</button>
   <a class="a2" href="tel:01067813555">전화 문의</a>
+</div>
+
+<!-- 빠른 상담 신청 시트: 신청폼이 17번째 화면에 있어서, 어디서든 바로 열리도록 둡니다 -->
+<div class="sheet" id="sheet" aria-hidden="true">
+  <div class="dim" onclick="closeSheet()"></div>
+  <div class="pnl formcard" role="dialog" aria-modal="true" aria-labelledby="shT">
+    <button type="button" class="x2" onclick="closeSheet()" aria-label="닫기">&times;</button>
+    <div class="gr"></div>
+    <div id="shDone" style="display:none;text-align:center;padding:16px 6px">
+      <div style="font-size:40px;line-height:1">&#9989;</div>
+      <p style="font-size:18px;font-weight:800;color:var(--navy);margin-top:10px">신청이 접수되었습니다</p>
+      <p style="color:#4A5A73;margin-top:4px;font-size:14.5px">영업일 기준 1일 이내에 연락드리겠습니다.<br>급하시면 아래로 바로 전화 주셔도 됩니다.</p>
+      <a class="btn" href="tel:01067813555">전화로 문의 010-6781-3555</a>
+    </div>
+    <form id="shForm" onsubmit="return submitQuick(event)">
+      <h3 id="shT">조건만 확인해 드립니다</h3>
+      <p class="sd">이름과 연락처만 남겨주시면, 지원 가능한 조건인지 확인해 연락드립니다.<br>
+      상담만 받고 지원하지 않으셔도 전혀 문제 없습니다.</p>
+      <label for="qnm">이름</label>
+      <input id="qnm" type="text" required autocomplete="name" placeholder="홍길동">
+      <label for="qph">연락처</label>
+      <input id="qph" type="tel" required autocomplete="tel" inputmode="numeric" placeholder="010-0000-0000">
+      <label class="agree">
+        <input type="checkbox" id="qag" required>
+        <span>상담을 위한 개인정보(이름, 연락처) 수집&middot;이용에 동의합니다. 상담 목적으로만 사용하며 상담 종료 후 파기합니다.</span>
+      </label>
+      <button class="btn" type="submit">상담 신청하기</button>
+      <a class="btn line" href="tel:01067813555" style="margin-top:10px">전화로 바로 문의 010-6781-3555</a>
+    </form>
+  </div>
 </div>
 
 <div class="lb" id="lb"><span class="x" id="lbx">&times;</span>
@@ -1118,9 +1205,75 @@ var GFORM = {
 };
 
 function trackLead(){
+  var T = window.TRACKING || {};
   try{ if(window.fbq) fbq('track','Lead'); }catch(e){}
-  try{ if(window.kakaoPixel) kakaoPixel('여기에_카카오_ID').completeRegistration(); }catch(e){}
+  try{ if(window.kakaoPixel && T.kakao) kakaoPixel(T.kakao).completeRegistration(); }catch(e){}
   try{ if(window.wcs){ var c={}; c["type"]="4"; c["value"]="0"; wcs.trans(c); } }catch(e){}
+}
+
+/* 구글폼 전송 (전체 폼과 빠른신청 시트가 함께 씁니다) */
+function postToGForm(v){
+  var f = document.createElement('form');
+  f.action = 'https://docs.google.com/forms/d/e/' + GFORM.id + '/formResponse';
+  f.method = 'POST';
+  f.target = 'gfsink';
+  Object.keys(GFORM.entry).forEach(function(k){
+    var i = document.createElement('input');
+    i.type = 'hidden'; i.name = GFORM.entry[k]; i.value = v[k] || '';
+    f.appendChild(i);
+  });
+  document.body.appendChild(f);
+  f.submit();
+  document.body.removeChild(f);
+}
+
+/* ── 빠른 상담 신청 시트 ──────────────────────────────────────────────
+   신청폼이 페이지 한참 아래(모바일 기준 17번째 화면)에 있어서,
+   스티키바와 히어로에서 바로 열 수 있게 만든 축약 폼입니다.
+   이름·연락처만 받고, 나머지 3개 항목은 전화 상담에서 확인하므로
+   아래 기본값으로 보냅니다. 기본값은 QUICK_DEFAULTS 만 고치면 됩니다. */
+var QUICK_DEFAULTS = {
+  course: '아직 정하지 못했습니다',
+  card:   '발급 방법을 모르겠습니다',
+  time:   '가능합니다'
+};
+
+function openSheet(from){
+  var s = document.getElementById('sheet');
+  window.__sheetFrom = from || 'sticky';
+  s.classList.add('on');
+  s.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  setTimeout(function(){ try{ document.getElementById('qnm').focus(); }catch(e){} }, 130);
+}
+
+function closeSheet(){
+  var s = document.getElementById('sheet');
+  s.classList.remove('on');
+  s.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape' && document.getElementById('sheet').classList.contains('on')) closeSheet();
+});
+
+function submitQuick(e){
+  e.preventDefault();
+  var srcEl = document.getElementById('src');
+  var src = (srcEl && srcEl.value) ? srcEl.value + ' ' : '';
+  postToGForm({
+    name:   document.getElementById('qnm').value,
+    phone:  document.getElementById('qph').value,
+    course: QUICK_DEFAULTS.course,
+    card:   QUICK_DEFAULTS.card,
+    time:   QUICK_DEFAULTS.time,
+    source: src + '· 빠른신청(' + (window.__sheetFrom || 'sticky') + ') 카드·일정 미확인'
+  });
+  trackLead();
+  document.getElementById('shForm').style.display = 'none';
+  document.getElementById('shDone').style.display = 'block';
+  return false;
 }
 
 function submitLead(e){
@@ -1137,19 +1290,7 @@ function submitLead(e){
     time:   document.getElementById('tm').value,
     source: document.getElementById('src').value
   };
-  var f = document.createElement('form');
-  f.action = 'https://docs.google.com/forms/d/e/' + GFORM.id + '/formResponse';
-  f.method = 'POST';
-  f.target = 'gfsink';
-  Object.keys(GFORM.entry).forEach(function(k){
-    var i = document.createElement('input');
-    i.type = 'hidden'; i.name = GFORM.entry[k]; i.value = v[k] || '';
-    f.appendChild(i);
-  });
-  document.body.appendChild(f);
-  f.submit();
-  document.body.removeChild(f);
-
+  postToGForm(v);
   trackLead();
   document.getElementById('leadForm').style.display = 'none';
   document.getElementById('done').style.display = 'block';
